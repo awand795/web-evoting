@@ -1,45 +1,50 @@
-const db = require('../models')
+const db = require("../models");
 const User = db.user;
 
-exports.getAllUser = (req,res) =>{
-    User.find({},(err,data)=>{
-        if(err){
-            res.status(500).send({ message: err });
-            return;
-        }
-        res.send({data:data})
-    })
-}
+exports.getAllUser = async (req, res) => {
+  try {
+    const data = await User.find({}).populate("roles", "-__v");
+    res.send({ data: data });
+  } catch (err) {
+    res.status(500).send({ message: err.message || "Error fetching users." });
+  }
+};
 
-exports.getFindUser = (req,res) =>{
-    const id = req.body.id;
-    User.find({_id:id},(err,data)=>{
-        if(err){
-            res.status(500).send({ message: err });
-            return;
-        }
-        res.send({data:data})
-    })
-}
+exports.getFindUser = async (req, res) => {
+  try {
+    const id = req.params.id;
+    const data = await User.findById(id).populate("roles", "-__v");
+    if (!data) {
+      return res.status(404).send({ message: "User not found." });
+    }
+    res.send({ data: data });
+  } catch (err) {
+    res.status(500).send({ message: err.message || "Error fetching user." });
+  }
+};
 
-exports.editUser = (req,res) => {
-    const id = req.body.id;
-    User.findByIdAndUpdate(id,req.body,(err,data) => {
-        if(err){
-            res.status(500).send({ message: err });
-            return;
-        }
-        res.send({message:"Success",data:data})
-    })
-}
+exports.editUser = async (req, res) => {
+  try {
+    const id = req.params.id;
+    const data = await User.findByIdAndUpdate(id, req.body, { new: true });
+    if (!data) {
+      return res.status(404).send({ message: "User not found." });
+    }
+    res.send({ message: "Success", data: data });
+  } catch (err) {
+    res.status(500).send({ message: err.message || "Error updating user." });
+  }
+};
 
-exports.deleteUser = (req,res) => {
-    const id = req.body.id;
-    User.findByIdAndDelete(id,(err) => {
-        if(err){
-            res.status(500).send({ message: err });
-            return;
-        }
-        res.send({message:"Success"})
-    })
-}
+exports.deleteUser = async (req, res) => {
+  try {
+    const id = req.params.id;
+    const data = await User.findByIdAndDelete(id);
+    if (!data) {
+      return res.status(404).send({ message: "User not found." });
+    }
+    res.send({ message: "Success" });
+  } catch (err) {
+    res.status(500).send({ message: err.message || "Error deleting user." });
+  }
+};

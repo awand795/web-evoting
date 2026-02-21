@@ -1,3 +1,3 @@
 module.exports = {
-  secret: "awandd-wl"
+  secret: process.env.JWT_SECRET || "web-evoting-secret-key-2024"
 };

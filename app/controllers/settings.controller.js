@@ -1,23 +1,24 @@
-const db = require('../models')
+const db = require("../models");
 const Settings = db.settings;
 
-exports.getSettingsStatus = (req,res) =>{
-    Settings.find({},(err,data)=>{
-        if(err){
-            res.status(500).send({ message: err });
-            return;
-        }
-        res.send({data:data})
-    })
-}
+exports.getSettingsStatus = async (req, res) => {
+  try {
+    const data = await Settings.find({});
+    res.send({ data: data });
+  } catch (err) {
+    res.status(500).send({ message: err.message || "Error fetching settings." });
+  }
+};
 
-exports.editSettings = (req,res) => {
-    const id = req.body.id;
-    Settings.findByIdAndUpdate(id,req.body,(err,data) => {
-        if(err){
-            res.status(500).send({ message: err });
-            return;
-        }
-        res.send({message:"Success",data:data})
-    })
-}
+exports.editSettings = async (req, res) => {
+  try {
+    const id = req.params.id;
+    const data = await Settings.findByIdAndUpdate(id, req.body, { new: true });
+    if (!data) {
+      return res.status(404).send({ message: "Settings not found." });
+    }
+    res.send({ message: "Success", data: data });
+  } catch (err) {
+    res.status(500).send({ message: err.message || "Error updating settings." });
+  }
+};

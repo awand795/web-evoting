@@ -1,11 +1,14 @@
 const express = require("express");
 const cors = require("cors");
-const dbConfig = require("./app/config/db.config");
+const path = require("path");
 
 const app = express();
 
+// CORS configuration
 var corsOptions = {
-  origin: "http://localhost:3000"
+  origin: "http://localhost:3000",
+  methods: ["GET", "POST", "PUT", "DELETE"],
+  allowedHeaders: ["x-access-token", "Origin", "Content-Type", "Accept"]
 };
 
 app.use(cors(corsOptions));
@@ -16,15 +19,21 @@ app.use(express.json());
 // parse requests of content-type - application/x-www-form-urlencoded
 app.use(express.urlencoded({ extended: true }));
 
+// Set base directory for file uploads
+global.__basedir = __dirname;
+
+// Serve uploaded files statically
+app.use("/resources", express.static(path.join(__dirname, "resources")));
+
 const db = require("./app/models");
 const Role = db.role;
-const Settings = db.settings
+const Settings = db.settings;
+
+// Connect to MongoDB using db.config
+const dbConfig = require("./app/config/db.config");
 
 db.mongoose
-  .connect(`mongodb+srv://awand795:Awanda21345@cluster0.i1501.mongodb.net/?retryWrites=true&w=majority`, {
-    useNewUrlParser: true,
-    useUnifiedTopology: true
-  })
+  .connect(dbConfig.url)
   .then(() => {
     console.log("Successfully connect to MongoDB.");
     initial();
@@ -36,7 +45,7 @@ db.mongoose
 
 // simple route
 app.get("/", (req, res) => {
-  res.json({ message: "Welcome to bezkoder application." });
+  res.json({ message: "Welcome to Web E-Voting API." });
 });
 
 // routes
@@ -47,59 +56,32 @@ require("./app/routes/user.routes")(app);
 require("./app/routes/kandidat.routes")(app);
 require("./app/routes/settings.routes")(app);
 
-
 // set port, listen for requests
 const PORT = process.env.PORT || 8080;
 app.listen(PORT, () => {
   console.log(`Server is running on port ${PORT}.`);
 });
 
-function initial() {
-  Role.estimatedDocumentCount((err, count) => {
-    if (!err && count === 0) {
-      new Role({
-        name: "user"
-      }).save(err => {
-        if (err) {
-          console.log("error", err);
-        }
+async function initial() {
+  try {
+    const roleCount = await Role.estimatedDocumentCount();
+    if (roleCount === 0) {
+      await new Role({ name: "user" }).save();
+      console.log("added 'user' to roles collection");
 
-        console.log("added 'user' to roles collection");
-      });
+      await new Role({ name: "moderator" }).save();
+      console.log("added 'moderator' to roles collection");
 
-      new Role({
-        name: "moderator"
-      }).save(err => {
-        if (err) {
-          console.log("error", err);
-        }
-
-        console.log("added 'moderator' to roles collection");
-      });
-
-      new Role({
-        name: "admin"
-      }).save(err => {
-        if (err) {
-          console.log("error", err);
-        }
-
-        console.log("added 'admin' to roles collection");
-      });
+      await new Role({ name: "admin" }).save();
+      console.log("added 'admin' to roles collection");
     }
-  });
 
-  Settings.estimatedDocumentCount((err,count)=>{
-    if (!err && count === 0) {
-      new Settings({
-        status: "open"
-      }).save(err => {
-        if (err) {
-          console.log("error", err);
-        }
-
-        console.log("added 'Status' to Settings collection");
-      });
+    const settingsCount = await Settings.estimatedDocumentCount();
+    if (settingsCount === 0) {
+      await new Settings({ status: "open" }).save();
+      console.log("added 'Status' to Settings collection");
     }
-  })
+  } catch (err) {
+    console.error("Initialization error:", err);
+  }
 }

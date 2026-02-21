@@ -1,6 +1,5 @@
 const { authJwt } = require("../middlewares");
-const controller = require('../controllers/settings.controller')
-const { isAdmin } = require("../middlewares/authJwt");
+const controller = require("../controllers/settings.controller");
 
 module.exports = function(app) {
   app.use(function(req, res, next) {
@@ -11,7 +10,8 @@ module.exports = function(app) {
     next();
   });
 
-  app.get("/api/settings", [authJwt.verifyToken, isAdmin] ,controller.getSettingsStatus);
+  app.get("/api/settings", [authJwt.verifyToken, authJwt.isAdmin], controller.getSettingsStatus);
 
-  app.put("/api/kandidat/:id", [authJwt.verifyToken, isAdmin], controller.editSettings);
+  // Fixed: was incorrectly /api/kandidat/:id
+  app.put("/api/settings/:id", [authJwt.verifyToken, authJwt.isAdmin], controller.editSettings);
 };

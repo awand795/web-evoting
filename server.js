@@ -7,7 +7,13 @@ const app = express();
 
 // CORS configuration
 var corsOptions = {
-  origin: "http://localhost:3000",
+  origin: function(origin, callback) {
+    // Izinkan semua localhost (untuk development)
+    if (!origin || /^http:\/\/localhost:\d+$/.test(origin)) {
+      return callback(null, true);
+    }
+    callback(new Error("Not allowed by CORS"));
+  },
   methods: ["GET", "POST", "PUT", "DELETE"],
   allowedHeaders: ["x-access-token", "Origin", "Content-Type", "Accept"]
 };

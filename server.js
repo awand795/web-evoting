@@ -1,3 +1,4 @@
+require("dotenv").config();
 const express = require("express");
 const cors = require("cors");
 const path = require("path");
@@ -55,6 +56,7 @@ require("./app/routes/auth.routes")(app);
 require("./app/routes/user.routes")(app);
 require("./app/routes/kandidat.routes")(app);
 require("./app/routes/settings.routes")(app);
+require("./app/routes/vote.routes")(app);
 
 // set port, listen for requests
 const PORT = process.env.PORT || 8080;

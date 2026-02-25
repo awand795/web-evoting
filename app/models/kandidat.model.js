@@ -3,8 +3,9 @@ const mongoose = require("mongoose");
 const Kandidat = mongoose.model(
   "Kandidat",
   new mongoose.Schema({
-    nourut:String,
+    nourut: String,
     nama: String,
+    foto: String,
     visi: String,
     misi: String
   })

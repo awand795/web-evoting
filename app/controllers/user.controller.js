@@ -1,5 +1,6 @@
 const db = require("../models");
 const User = db.user;
+const bcrypt = require("bcryptjs");
 
 exports.getAllUser = async (req, res) => {
   try {
@@ -26,7 +27,14 @@ exports.getFindUser = async (req, res) => {
 exports.editUser = async (req, res) => {
   try {
     const id = req.params.id;
-    const data = await User.findByIdAndUpdate(id, req.body, { new: true });
+    const updateData = { ...req.body };
+
+    // Hash password if it's being updated
+    if (updateData.password) {
+      updateData.password = bcrypt.hashSync(updateData.password, 8);
+    }
+
+    const data = await User.findByIdAndUpdate(id, updateData, { new: true });
     if (!data) {
       return res.status(404).send({ message: "User not found." });
     }

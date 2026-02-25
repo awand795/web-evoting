@@ -7,8 +7,9 @@ db.mongoose = mongoose;
 
 db.user = require("./user.model");
 db.role = require("./role.model");
-db.kandidat = require('./kandidat.model')
-db.settings = require('./settings.models')
+db.kandidat = require('./kandidat.model');
+db.settings = require('./settings.models');
+db.vote = require('./vote.model');
 
 db.ROLES = ["user", "admin", "moderator"];
 

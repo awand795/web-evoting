@@ -1,7 +1,14 @@
 const uploadFile = require("../middlewares/upload");
 const fs = require("fs");
 const path = require("path");
-const baseUrl = "http://localhost:8080/files/";
+const baseUrl = process.env.BASE_URL || "http://localhost:8080/files/";
+
+const directoryPath = path.join(__basedir, "resources", "static", "assets", "uploads");
+
+// Validate filename to prevent path traversal
+function isSafeFilename(name) {
+  return name && !name.includes("/") && !name.includes("\\") && !name.includes("..");
+}
 
 const upload = async (req, res) => {
   try {
@@ -30,8 +37,6 @@ const upload = async (req, res) => {
 };
 
 const getListFiles = (req, res) => {
-  const directoryPath = path.join(__basedir, "resources", "static", "assets", "uploads");
-
   fs.readdir(directoryPath, function (err, files) {
     if (err) {
       return res.status(500).send({
@@ -54,7 +59,10 @@ const getListFiles = (req, res) => {
 
 const download = (req, res) => {
   const fileName = req.params.name;
-  const directoryPath = path.join(__basedir, "resources", "static", "assets", "uploads");
+
+  if (!isSafeFilename(fileName)) {
+    return res.status(400).send({ message: "Invalid file name." });
+  }
 
   res.download(path.join(directoryPath, fileName), fileName, (err) => {
     if (err) {
@@ -67,7 +75,10 @@ const download = (req, res) => {
 
 const remove = (req, res) => {
   const fileName = req.params.name;
-  const directoryPath = path.join(__basedir, "resources", "static", "assets", "uploads");
+
+  if (!isSafeFilename(fileName)) {
+    return res.status(400).send({ message: "Invalid file name." });
+  }
 
   fs.unlink(path.join(directoryPath, fileName), (err) => {
     if (err) {

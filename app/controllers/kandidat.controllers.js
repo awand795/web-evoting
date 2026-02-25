@@ -6,6 +6,7 @@ exports.createKandidat = async (req, res) => {
     const kandidat = new Kandidat({
       nourut: req.body.nourut,
       nama: req.body.nama,
+      foto: req.body.foto || null,
       visi: req.body.visi,
       misi: req.body.misi
     });

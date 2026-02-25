@@ -1,0 +1,13 @@
+.user-management .form-inline {
+  margin-bottom: 1.5rem;
+}
+
+.user-management .edit-row input,
+.user-management .edit-row select {
+  padding: 0.35rem 0.5rem;
+  border: 1px solid var(--primary);
+  border-radius: var(--radius);
+  font-size: 0.85rem;
+  width: 100%;
+  min-width: 80px;
+}

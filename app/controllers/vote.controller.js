@@ -14,6 +14,13 @@ exports.castVote = async (req, res) => {
       return res.status(400).send({ message: "kandidatId wajib diisi." });
     }
 
+    // Cek apakah user adalah admin — admin tidak boleh memilih
+    const currentUser = await User.findById(userId).populate("roles", "name");
+    const isAdmin = currentUser?.roles?.some((r) => r.name === "admin");
+    if (isAdmin) {
+      return res.status(403).send({ message: "Admin tidak diizinkan untuk memilih." });
+    }
+
     // Cek apakah voting sedang dibuka
     const settings = await Settings.findOne({});
     if (!settings || settings.status !== "open") {
@@ -50,9 +57,19 @@ exports.getHasil = async (req, res) => {
   try {
     const kandidatList = await Kandidat.find({});
 
+    // Ambil ID semua user yang punya role admin — vote mereka tidak dihitung
+    const adminRole = await db.role.findOne({ name: "admin" });
+    const adminUserIds = adminRole
+      ? (await User.find({ roles: adminRole._id }).select("_id")).map((u) => u._id)
+      : [];
+
     const hasil = await Promise.all(
       kandidatList.map(async (kandidat) => {
-        const jumlahVote = await Vote.countDocuments({ kandidat: kandidat._id });
+        // Hanya hitung vote dari non-admin
+        const jumlahVote = await Vote.countDocuments({
+          kandidat: kandidat._id,
+          user: { $nin: adminUserIds },
+        });
         return {
           _id: kandidat._id,
           nourut: kandidat.nourut,
@@ -60,7 +77,8 @@ exports.getHasil = async (req, res) => {
           foto: kandidat.foto,
           visi: kandidat.visi,
           misi: kandidat.misi,
-          jumlahVote
+          videoVisiMisi: kandidat.videoVisiMisi,
+          jumlahVote,
         };
       })
     );

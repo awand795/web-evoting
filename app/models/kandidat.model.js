@@ -6,6 +6,7 @@ const Kandidat = mongoose.model(
     nourut: String,
     nama: String,
     foto: String,
+    videoVisiMisi: String,
     visi: String,
     misi: String
   })

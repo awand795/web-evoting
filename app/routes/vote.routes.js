@@ -18,4 +18,7 @@ module.exports = function(app) {
 
   // Hasil voting - semua user terautentikasi bisa lihat
   app.get("/api/hasil", [authJwt.verifyToken], controller.getHasil);
+
+  // Hasil voting publik - tanpa login
+  app.get("/api/public/hasil", controller.getHasil);
 };

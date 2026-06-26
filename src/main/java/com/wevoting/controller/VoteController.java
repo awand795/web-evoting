@@ -36,8 +36,13 @@ public class VoteController {
 
     @PostMapping("/vote")
     public ResponseEntity<?> castVote(Authentication authentication, @Valid @RequestBody VoteRequest request) {
-        UserDetailsImpl userDetails = (UserDetailsImpl) authentication.getPrincipal();
-        Long userId = userDetails.getId();
+        Object principal = authentication.getPrincipal();
+        Long userId;
+        if (principal instanceof UserDetailsImpl userDetails) {
+            userId = userDetails.getId();
+        } else {
+            return ResponseEntity.status(401).body(new MessageResponse("Autentikasi tidak valid"));
+        }
 
         // Check if user is admin
         boolean isAdmin = userDetails.getAuthorities().stream()
@@ -90,8 +95,13 @@ public class VoteController {
 
     @GetMapping("/vote/status")
     public ResponseEntity<?> getVoteStatus(Authentication authentication) {
-        UserDetailsImpl userDetails = (UserDetailsImpl) authentication.getPrincipal();
-        Long userId = userDetails.getId();
+        Object principal = authentication.getPrincipal();
+        Long userId;
+        if (principal instanceof UserDetailsImpl userDetails) {
+            userId = userDetails.getId();
+        } else {
+            return ResponseEntity.status(401).body(new MessageResponse("Autentikasi tidak valid"));
+        }
 
         Optional<Vote> vote = voteRepository.findByUserId(userId);
         if (vote.isPresent()) {

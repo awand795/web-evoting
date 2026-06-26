@@ -35,7 +35,7 @@ spring:
 
 # Server Configuration
 server:
-  port: ${PORT:5000}
+  port: ${PORT:5001}
   servlet:
     context-path: /api
 

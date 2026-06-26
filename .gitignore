@@ -1,4 +1,31 @@
+# Node.js
 node_modules
+
+# Java / Maven
+target/
+*.class
+*.jar
+*.war
+*.log
+
+# IDE
+.idea/
+*.iml
+.vscode/
+
+# OS
+.DS_Store
+Thumbs.db
+nul
+
+# Uploads
+uploads/*
+!uploads/.gitkeep
 resources/static/assets/uploads/*
 !resources/static/assets/uploads/.gitkeep
+
+# Environment
 .env
+
+# Build output
+dist/

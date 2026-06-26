@@ -12,6 +12,7 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
+import java.time.LocalDateTime;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -47,8 +48,22 @@ public class VoteController {
 
         // Check if voting is open
         List<Settings> settingsList = settingsRepository.findAll();
-        if (settingsList.isEmpty() || !"open".equals(settingsList.get(0).getStatus())) {
+        if (settingsList.isEmpty()) {
+            return ResponseEntity.status(403).body(new MessageResponse("Voting belum dikonfigurasi"));
+        }
+        Settings settings = settingsList.get(0);
+
+        if (!"open".equals(settings.getStatus())) {
             return ResponseEntity.status(403).body(new MessageResponse("Voting sedang ditutup"));
+        }
+
+        // Check voting schedule (waktuMulai / waktuSelesai)
+        LocalDateTime now = LocalDateTime.now();
+        if (settings.getWaktuMulai() != null && now.isBefore(settings.getWaktuMulai())) {
+            return ResponseEntity.status(403).body(new MessageResponse("Voting belum dimulai. Silakan tunggu jadwal yang ditentukan."));
+        }
+        if (settings.getWaktuSelesai() != null && now.isAfter(settings.getWaktuSelesai())) {
+            return ResponseEntity.status(403).body(new MessageResponse("Sesi voting telah berakhir."));
         }
 
         // Check if kandidat exists

@@ -71,7 +71,7 @@ public class SecurityConfig {
         .requestMatchers("/files/**").permitAll()
         .requestMatchers("/kandidat/template").permitAll()
         .requestMatchers(HttpMethod.GET, "/kandidat").permitAll()
-                .requestMatchers(HttpMethod.GET, "/api/kandidat/**").permitAll()
+                .requestMatchers(HttpMethod.GET, "/kandidat/**").permitAll()
                 .anyRequest().authenticated()
             )
             .authenticationProvider(authenticationProvider())

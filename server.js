@@ -50,9 +50,9 @@ db.mongoose
     process.exit();
   });
 
-// simple route
+// Serve landing page at root
 app.get("/", (req, res) => {
-  res.json({ message: "Welcome to Web E-Voting API." });
+  res.sendFile(path.join(__dirname, "resources", "static", "index.html"));
 });
 
 // routes
@@ -88,6 +88,22 @@ async function initial() {
     if (settingsCount === 0) {
       await new Settings({ status: "open" }).save();
       console.log("added 'Status' to Settings collection");
+    }
+
+    // Seed demo account if not exists
+    const bcrypt = require("bcryptjs");
+    const demoUser = await User.findOne({ username: "demo" });
+    if (!demoUser) {
+      const userRole = await Role.findOne({ name: "user" });
+      await new User({
+        name: "Akun Demo",
+        username: "demo",
+        email: "demo@evoting.com",
+        password: bcrypt.hashSync("demo123", 8),
+        roles: [userRole._id],
+        status: "Belum Memilih"
+      }).save();
+      console.log("added 'demo' user for testing");
     }
   } catch (err) {
     console.error("Initialization error:", err);

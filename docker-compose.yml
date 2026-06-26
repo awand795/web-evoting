@@ -1,0 +1,40 @@
+services:
+  # ===== MongoDB Database =====
+  mongo:
+    image: mongo:7
+    container_name: evoting-mongo
+    restart: unless-stopped
+    environment:
+      MONGO_INITDB_DATABASE: db_evoting
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongo_data:/data/db
+    healthcheck:
+      test: echo 'db.runCommand("ping").ok' | mongosh --quiet
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # ===== Node.js Backend =====
+  backend:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: evoting-backend
+    restart: unless-stopped
+    depends_on:
+      mongo:
+        condition: service_healthy
+    environment:
+      MONGODB_URI: mongodb://mongo:27017/db_evoting
+      JWT_SECRET: web-evoting-secret-key-2024-docker
+      PORT: 8080
+    ports:
+      - "8080:8080"
+    volumes:
+      - uploads_data:/app/resources/static/assets/uploads
+
+volumes:
+  mongo_data:
+  uploads_data:

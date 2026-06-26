@@ -4,26 +4,31 @@ import { useAuth } from "../context/AuthContext";
 import { getAllKandidat } from "../services/kandidat.service";
 import { getAllUsers } from "../services/user.service";
 import { getVoteStatus, getHasil } from "../services/vote.service";
+import { getSchedule } from "../services/settings.service";
 import { motion } from "framer-motion";
 import { Vote, Users, BarChart3, CheckCircle, Clock, UserCheck, Settings, Shield, ArrowRight, User } from "lucide-react";
 import { StatsSkeleton } from "../components/Skeleton";
+import CountdownTimer from "../components/CountdownTimer";
 
 export default function DashboardPage() {
   const { user, isAdmin } = useAuth();
   const [stats, setStats] = useState({ kandidat: 0, users: 0, totalVote: 0 });
   const [sudahMemilih, setSudahMemilih] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [schedule, setSchedule] = useState({ waktuMulai: null, waktuSelesai: null, status: null });
 
   useEffect(() => {
     async function loadStats() {
       try {
-        const [kandidatRes, voteStatusRes, hasilRes] = await Promise.all([
+        const [kandidatRes, voteStatusRes, hasilRes, scheduleRes] = await Promise.all([
           getAllKandidat(),
           getVoteStatus(),
           getHasil().catch(() => ({ data: [], totalVote: 0 })),
+          getSchedule().catch(() => ({ waktuMulai: null, waktuSelesai: null, status: null })),
         ]);
         setStats((prev) => ({ ...prev, kandidat: kandidatRes.data?.length || 0, totalVote: hasilRes.totalVote || 0 }));
         setSudahMemilih(voteStatusRes.sudahMemilih || false);
+        setSchedule(scheduleRes);
       } catch { /* ignore */ }
 
       if (isAdmin) {
@@ -85,6 +90,13 @@ export default function DashboardPage() {
           </span>
         </div>
       </motion.div>
+
+      {/* Countdown Timer */}
+      <CountdownTimer
+        waktuMulai={schedule.waktuMulai}
+        waktuSelesai={schedule.waktuSelesai}
+        status={schedule.status}
+      />
 
       {/* Stats Grid */}
       {loading ? (

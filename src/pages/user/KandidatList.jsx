@@ -2,10 +2,11 @@ import { useEffect, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { getAllKandidat } from "../../services/kandidat.service";
 import { castVote, getVoteStatus } from "../../services/vote.service";
-import { getSettings } from "../../services/settings.service";
+import { getSchedule } from "../../services/settings.service";
 import { useAuth } from "../../context/AuthContext";
 import { Vote, X, CheckCircle, AlertCircle, Clock, User, Award } from "lucide-react";
 import { CardSkeleton } from "../../components/Skeleton";
+import CountdownTimer from "../../components/CountdownTimer";
 import toast from "react-hot-toast";
 
 export default function KandidatList() {
@@ -17,20 +18,21 @@ export default function KandidatList() {
   const [error, setError] = useState("");
   const [selectedKandidat, setSelectedKandidat] = useState(null);
   const [showConfirmModal, setShowConfirmModal] = useState(false);
+  const [schedule, setSchedule] = useState({ waktuMulai: null, waktuSelesai: null, status: null });
   const { updateUserStatus } = useAuth();
 
   useEffect(() => {
     async function load() {
       try {
-        const [kandidatRes, statusRes, settingsRes] = await Promise.all([
+        const [kandidatRes, statusRes, scheduleRes] = await Promise.all([
           getAllKandidat(),
           getVoteStatus(),
-          getSettings(),
+          getSchedule(),
         ]);
         setKandidat(kandidatRes.data || []);
         setSudahMemilih(statusRes.sudahMemilih || false);
-        const settingsData = Array.isArray(settingsRes.data) ? settingsRes.data[0] : settingsRes.data;
-        setVotingOpen(settingsData?.status === "open");
+        setSchedule(scheduleRes);
+        setVotingOpen(scheduleRes?.status === "open");
       } catch (err) {
         setError(err.message);
       } finally {
@@ -79,6 +81,13 @@ export default function KandidatList() {
         <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 dark:text-white">Daftar Kandidat</h1>
         <p className="text-gray-500 dark:text-gray-400 mt-1">Pilih kandidat yang Anda percayai untuk memimpin</p>
       </motion.div>
+
+      {/* Countdown Timer */}
+      <CountdownTimer
+        waktuMulai={schedule.waktuMulai}
+        waktuSelesai={schedule.waktuSelesai}
+        status={schedule.status}
+      />
 
       {/* Alerts */}
       {!votingOpen && (

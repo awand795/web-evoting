@@ -7,3 +7,7 @@ export function getSettings() {
 export function updateSettings(id, data) {
   return put(`/settings/${id}`, data);
 }
+
+export function getSchedule() {
+  return get("/settings/public");
+}
